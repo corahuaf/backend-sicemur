@@ -10,13 +10,6 @@ module.exports = (sequelize, DataTypes) => {
       unique: true,
       allowNull: false
     },
-    descripcion: {
-      type: DataTypes.STRING(255)
-    },
-    esSistema: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false
-    },
     permisos: {
       type: DataTypes.ARRAY(DataTypes.STRING(50)),
       defaultValue: []

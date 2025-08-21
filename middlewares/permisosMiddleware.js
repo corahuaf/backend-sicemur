@@ -21,9 +21,13 @@ exports.verificarPermiso = (permisoRequerido) => {
         return next();
       }
 
+      if (usuario.rol_usuario.nombre === 'ADMIN') {
+        return next();
+      }
+
       // Verificar si el rol tiene el permiso requerido
       const permisos = usuario.rol_usuario.permisos || [];
-      
+
       if (permisos.includes(permisoRequerido)) {
         return next();
       }
@@ -105,10 +109,14 @@ exports.verificarPermisos = (permisosRequeridos) => {
         return next();
       }
 
+      if (usuario.rol_usuario.nombre === 'ADMIN') {
+        return next();
+      }
+
       // Verificar si el rol tiene al menos uno de los permisos requeridos
       const permisos = usuario.rol_usuario.permisos || [];
       const tienePermiso = permisosRequeridos.some(permiso => permisos.includes(permiso));
-      
+
       if (tienePermiso) {
         return next();
       }
