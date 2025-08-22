@@ -27,5 +27,6 @@ router.patch('/:id/estado', auth.verifyToken, permisos.verificarPermiso('espacio
 router.post('/:id/contenido', auth.verifyToken, permisos.verificarPermiso('espacios:actualizar'), agregarContenidoValidator, espacioController.agregarContenido);
 router.delete('/:id/contenido/:contenidoId', auth.verifyToken, permisos.verificarPermiso('espacios:actualizar'), espacioController.eliminarContenido);
 router.get('/:id/contenido', auth.verifyToken, permisos.verificarPermiso('espacios:leer'), espacioController.obtenerContenido);
-
+// routes/espacioRoutes.js  (añadir al final)
+router.post('/:id/atributos/:tipo', auth.verifyToken, permisos.verificarPermiso('espacios:actualizar'), espacioController.crearAtributos);
 module.exports = router;

@@ -1,5 +1,6 @@
 const espacioService = require('../services/espacioService');
 const { validationResult } = require('express-validator');
+const db = require('../models');
 
 exports.crearEspacio = async (req, res) => {
   const errors = validationResult(req);
@@ -130,4 +131,32 @@ exports.cambiarEstadoEspacio = async (req, res) => {
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
+};
+
+// controllers/espacioController.js
+exports.crearAtributos = async (req, res) => {
+  const { id, tipo } = req.params;
+  const data = { espacio_id: Number(id), ...req.body };
+
+  switch (tipo.toLowerCase()) {
+    case 'lote':
+      await db.AtributosLote.create(data);
+      break;
+    case 'nicho':
+      await db.AtributosNicho.create(data);
+      break;
+    case 'tumba':
+      await db.AtributosTumba.create(data);
+      break;
+    case 'mausoleo':
+      await db.AtributosMausoleo.create(data);
+      break;
+    case 'pabellon':
+      await db.AtributosPabellon.create(data);
+      break;
+    default:
+      return res.status(400).json({ error: 'Tipo de atributo inválido' });
+  }
+
+  res.status(201).json({ ok: true });
 };
