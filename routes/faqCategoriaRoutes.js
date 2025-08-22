@@ -1,3 +1,4 @@
+// routes/faqCategoriaRoutes.js
 const express = require('express');
 const router = express.Router();
 const faqCategoriaController = require('../controllers/faqCategoriaController');
@@ -9,17 +10,11 @@ const {
   actualizarOrdenValidator
 } = require('../validators/faqCategoriaValidator');
 
-// Solo administradores pueden gestionar categorías
-router.use(auth.verifyToken, permisos.verificarPermiso('gestion_faqs'));
-
-// Rutas CRUD
-router.post('/', crearCategoriaValidator, faqCategoriaController.crearCategoria);
+router.post('/', auth.verifyToken, permisos.verificarPermiso('faqs:crear'), crearCategoriaValidator, faqCategoriaController.crearCategoria);
 router.get('/', faqCategoriaController.obtenerTodasCategorias);
 router.get('/:id', faqCategoriaController.obtenerCategoriaPorId);
-router.put('/:id', actualizarCategoriaValidator, faqCategoriaController.actualizarCategoria);
-router.delete('/:id', faqCategoriaController.eliminarCategoria);
-
-// Ordenación
-router.put('/orden/actualizar', actualizarOrdenValidator, faqCategoriaController.actualizarOrdenCategorias);
+router.put('/:id', auth.verifyToken, permisos.verificarPermiso('faqs:actualizar'), actualizarCategoriaValidator, faqCategoriaController.actualizarCategoria);
+router.delete('/:id', auth.verifyToken, permisos.verificarPermiso('faqs:eliminar'), faqCategoriaController.eliminarCategoria);
+router.put('/orden/actualizar', auth.verifyToken, permisos.verificarPermiso('faqs:actualizar'), actualizarOrdenValidator, faqCategoriaController.actualizarOrdenCategorias);
 
 module.exports = router;

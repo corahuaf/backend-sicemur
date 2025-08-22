@@ -62,7 +62,11 @@ exports.login = async (req, res) => {
 
     // Generar token JWT
     const token = jwt.sign(
-      { id: usuario.id_usuario, rol: usuario.rol_usuario.nombre },
+      {
+        id: usuario.id_usuario,
+        rol: usuario.rol_usuario.nombre,
+        permisos: usuario.rol_usuario.permisos || []
+      },
       process.env.JWT_SECRET,
       { expiresIn: '8h' }
     );
@@ -173,6 +177,34 @@ exports.eliminarUsuario = async (req, res) => {
     }
 
     res.send({ message: 'Usuario eliminado correctamente' });
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
+};
+
+exports.actualizarOtroUsuario = async (req, res) => {
+  try {
+    const { nombres, ape_paterno, ape_materno, email, rol } = req.body;
+
+    const [updated] = await db.Usuario.update(
+      { nombres, ape_paterno, ape_materno, email, rol },
+      { where: { id_usuario: req.params.id } }
+    );
+
+    if (!updated) {
+      return res.status(404).send({ message: 'Usuario no encontrado' });
+    }
+
+    const usuarioActualizado = await db.Usuario.findByPk(req.params.id, {
+      attributes: { exclude: ['contrasena'] },
+      include: [{
+        model: db.RolUsuario,
+        as: 'rol_usuario',
+        attributes: ['nombre']
+      }]
+    });
+
+    res.json(usuarioActualizado);
   } catch (error) {
     res.status(500).send({ message: error.message });
   }

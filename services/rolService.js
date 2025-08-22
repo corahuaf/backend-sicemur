@@ -1,13 +1,19 @@
 const db = require('../models');
 const { Op } = require('sequelize');
 
-exports.crearRol = async (rolData) => {
-  return await db.RolUsuario.create(rolData);
+exports.crearRol = async (body) => {
+  const { nombre, permisos } = body; // <- desestructurar correctamente
+
+  if (!nombre || !Array.isArray(permisos)) {
+    throw new Error('nombre y permisos (array) son obligatorios');
+  }
+
+  return await db.RolUsuario.create({ nombre, permisos });
 };
 
 exports.obtenerTodosRoles = async (page = 1, limit = 10) => {
   const offset = (page - 1) * limit;
-  
+
   const { count, rows } = await db.RolUsuario.findAndCountAll({
     offset,
     limit,
@@ -40,10 +46,10 @@ exports.actualizarRol = async (id, rolData) => {
 
 exports.eliminarRol = async (id) => {
   const rol = await db.RolUsuario.findByPk(id);
-  
+
   if (!rol) return false;
   if (rol.esSistema) throw new Error('No se puede eliminar un rol del sistema');
-  
+
   // Verificar si hay usuarios asignados a este rol
   const usuarios = await db.Usuario.count({ where: { rol: id } });
   if (usuarios > 0) {
@@ -57,7 +63,7 @@ exports.eliminarRol = async (id) => {
 exports.asignarPermisos = async (rolId, permisos) => {
   const rol = await db.RolUsuario.findByPk(rolId);
   if (!rol) throw new Error('Rol no encontrado');
-  
+
   // Actualizar permisos
   rol.permisos = permisos;
   return await rol.save();
@@ -67,7 +73,7 @@ exports.obtenerPermisos = async (rolId) => {
   const rol = await db.RolUsuario.findByPk(rolId, {
     attributes: ['permisos']
   });
-  
+
   if (!rol) throw new Error('Rol no encontrado');
   return rol.permisos;
 };

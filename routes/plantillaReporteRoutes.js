@@ -8,17 +8,11 @@ const {
   actualizarPlantillaValidator
 } = require('../validators/plantillaReporteValidator');
 
-// Solo administradores pueden gestionar plantillas
-router.use(auth.verifyToken, permisos.verificarPermiso('gestion_reportes'));
-
-// Rutas CRUD
-router.post('/', crearPlantillaValidator, plantillaReporteController.crearPlantilla);
-router.get('/', plantillaReporteController.obtenerTodasPlantillas);
-router.get('/:id', plantillaReporteController.obtenerPlantillaPorId);
-router.put('/:id', actualizarPlantillaValidator, plantillaReporteController.actualizarPlantilla);
-router.delete('/:id', plantillaReporteController.eliminarPlantilla);
-
-// Generar reporte desde plantilla
-router.post('/:id/generar', plantillaReporteController.generarDesdePlantilla);
+router.post('/', auth.verifyToken, permisos.verificarPermiso('reportes:crear'), crearPlantillaValidator, plantillaReporteController.crearPlantilla);
+router.get('/', auth.verifyToken, permisos.verificarPermiso('reportes:leer'), plantillaReporteController.obtenerTodasPlantillas);
+router.get('/:id', auth.verifyToken, permisos.verificarPermiso('reportes:leer'), plantillaReporteController.obtenerPlantillaPorId);
+router.put('/:id', auth.verifyToken, permisos.verificarPermiso('reportes:actualizar'), actualizarPlantillaValidator, plantillaReporteController.actualizarPlantilla);
+router.delete('/:id', auth.verifyToken, permisos.verificarPermiso('reportes:eliminar'), plantillaReporteController.eliminarPlantilla);
+router.post('/:id/generar', auth.verifyToken, permisos.verificarPermiso('reportes:crear'), plantillaReporteController.generarDesdePlantilla);
 
 module.exports = router;

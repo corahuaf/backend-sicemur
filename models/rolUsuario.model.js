@@ -11,8 +11,8 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     },
     permisos: {
-      type: DataTypes.ARRAY(DataTypes.STRING(50)),
-      defaultValue: []
+      type: DataTypes.JSON,
+      allowNull: false
     }
   }, {
     tableName: 'RolUsuario',

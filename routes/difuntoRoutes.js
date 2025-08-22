@@ -1,3 +1,4 @@
+// routes/difuntoRoutes.js
 const express = require('express');
 const router = express.Router();
 const difuntoController = require('../controllers/difuntoController');
@@ -8,18 +9,19 @@ const {
   actualizarDifuntoValidator
 } = require('../validators/difuntoValidator');
 
-// Solo usuarios con permiso de gestión de difuntos
-router.use(auth.verifyToken, permisos.verificarPermiso('gestion_difuntos'));
+// Búsqueda pública
+router.get('/buscar', difuntoController.buscarDifuntos);
 
-// Rutas CRUD
-router.post('/', crearDifuntoValidator, difuntoController.crearDifunto);
+// Consultas públicas de lectura
 router.get('/', difuntoController.obtenerTodosDifuntos);
-router.get('/buscar', difuntoController.buscarDifuntos); // Búsqueda pública
 router.get('/:id', difuntoController.obtenerDifuntoPorId);
-router.put('/:id', actualizarDifuntoValidator, difuntoController.actualizarDifunto);
-router.delete('/:id', difuntoController.eliminarDifunto);
 
-// Historial de ocupaciones
+// Historial público
 router.get('/:id/ocupaciones', difuntoController.obtenerOcupacionesPorDifunto);
+
+// Gestión con permisos
+router.post('/', auth.verifyToken, permisos.verificarPermiso('difuntos:crear'), crearDifuntoValidator, difuntoController.crearDifunto);
+router.put('/:id', auth.verifyToken, permisos.verificarPermiso('difuntos:actualizar'), actualizarDifuntoValidator, difuntoController.actualizarDifunto);
+router.delete('/:id', auth.verifyToken, permisos.verificarPermiso('difuntos:eliminar'), difuntoController.eliminarDifunto);
 
 module.exports = router;

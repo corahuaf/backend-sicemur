@@ -1,3 +1,4 @@
+// routes/espacioRoutes.js
 const express = require('express');
 const router = express.Router();
 const espacioController = require('../controllers/espacioController');
@@ -11,29 +12,20 @@ const {
   cambiarEstadoValidator
 } = require('../validators/espacioValidator');
 
-// Solo usuarios con permiso de gestión de espacios
-router.use(auth.verifyToken, permisos.verificarPermiso('gestion_espacios'));
-
-// Rutas CRUD
-router.post('/', crearEspacioValidator, espacioController.crearEspacio);
-router.get('/', espacioController.obtenerTodosEspacios);
-router.get('/buscar', espacioController.buscarEspacios); // Búsqueda pública
+// Búsqueda y consultas públicas
+router.get('/buscar', espacioController.buscarEspacios);
 router.get('/:id', espacioController.obtenerEspacioPorId);
-router.put('/:id', actualizarEspacioValidator, espacioController.actualizarEspacio);
-router.delete('/:id', espacioController.eliminarEspacio);
-
-// Gestión de contenido
-router.post('/:id/contenido', agregarContenidoValidator, espacioController.agregarContenido);
-router.delete('/:id/contenido/:contenidoId', espacioController.eliminarContenido);
-router.get('/:id/contenido', espacioController.obtenerContenido);
-
-// Atributos específicos
 router.get('/:id/atributos/:tipo', obtenerAtributosValidator, espacioController.obtenerAtributos);
-
-// Ocupantes
 router.get('/:id/ocupantes', espacioController.obtenerOcupantes);
+router.get('/', espacioController.obtenerTodosEspacios);
 
-// Cambio de estado
-router.patch('/:id/estado', cambiarEstadoValidator, espacioController.cambiarEstadoEspacio);
+// Gestión (CRUD y administración)
+router.post('/', auth.verifyToken, permisos.verificarPermiso('espacios:crear'), crearEspacioValidator, espacioController.crearEspacio);
+router.put('/:id', auth.verifyToken, permisos.verificarPermiso('espacios:actualizar'), actualizarEspacioValidator, espacioController.actualizarEspacio);
+router.delete('/:id', auth.verifyToken, permisos.verificarPermiso('espacios:eliminar'), espacioController.eliminarEspacio);
+router.patch('/:id/estado', auth.verifyToken, permisos.verificarPermiso('espacios:actualizar'), cambiarEstadoValidator, espacioController.cambiarEstadoEspacio);
+router.post('/:id/contenido', auth.verifyToken, permisos.verificarPermiso('espacios:actualizar'), agregarContenidoValidator, espacioController.agregarContenido);
+router.delete('/:id/contenido/:contenidoId', auth.verifyToken, permisos.verificarPermiso('espacios:actualizar'), espacioController.eliminarContenido);
+router.get('/:id/contenido', auth.verifyToken, permisos.verificarPermiso('espacios:leer'), espacioController.obtenerContenido);
 
 module.exports = router;

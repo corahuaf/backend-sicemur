@@ -1,34 +1,48 @@
 const jwt = require('jsonwebtoken');
+const db = require('../models'); // asegurate de que la ruta sea correcta
 
-const verifyToken = (req, res, next) => {
+const verifyToken = async (req, res, next) => {
   const token = req.headers['authorization']?.split(' ')[1];
-  
+
   if (!token) {
     return res.status(403).send({ message: 'Se requiere token de autenticación' });
   }
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-    if (err) {
-      return res.status(401).send({ message: 'Token inválido' });
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const usuario = await db.Usuario.findByPk(decoded.id, {
+      include: [
+        {
+          model: db.RolUsuario,
+          as: 'rol_usuario',
+          attributes: ['nombre', 'permisos']
+        }
+      ]
+    });
+
+    if (!usuario) {
+      return res.status(401).send({ message: 'Usuario no encontrado' });
     }
-    req.userId = decoded.id;
+
+    req.user = {
+      id: usuario.id_usuario,
+      rol: usuario.rol_usuario.nombre,
+      permisos: usuario.rol_usuario.permisos || []
+    };
+
     next();
-  });
+  } catch (err) {
+    return res.status(401).send({ message: 'Token inválido' });
+  }
 };
 
+// (isAdmin puede quedar igual o eliminarlo si ya no se usa)
 const isAdmin = async (req, res, next) => {
   try {
-    const user = await db.Usuario.findByPk(req.userId, {
-      include: [{
-        model: db.RolUsuario,
-        as: 'rol_usuario'
-      }]
-    });
-    
-    if (user.rol_usuario.nombre === 'ADMIN') {
+    if (req.user && req.user.rol === 'ADMIN') {
       return next();
     }
-    
     res.status(403).send({ message: 'Requiere rol de administrador' });
   } catch (error) {
     res.status(500).send({ message: error.message });

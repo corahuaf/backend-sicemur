@@ -8,15 +8,12 @@ const {
   actualizarUbicacionValidator
 } = require('../validators/ubicacionValidator');
 
-// Solo usuarios con permiso de gestión de ubicaciones
-router.use(auth.verifyToken, permisos.verificarPermiso('gestion_ubicaciones'));
-
-// Rutas CRUD
-router.post('/', crearUbicacionValidator, ubicacionController.crearUbicacion);
-router.get('/', ubicacionController.obtenerTodasUbicaciones);
-router.get('/buscar', ubicacionController.buscarUbicaciones); // Búsqueda sin autenticación
-router.get('/:id', ubicacionController.obtenerUbicacionPorId);
-router.put('/:id', actualizarUbicacionValidator, ubicacionController.actualizarUbicacion);
-router.delete('/:id', ubicacionController.eliminarUbicacion);
+// Rutas con permisos por acción
+router.post('/', auth.verifyToken, permisos.verificarPermiso('ubicaciones:crear'), crearUbicacionValidator, ubicacionController.crearUbicacion);
+router.get('/', ubicacionController.obtenerTodasUbicaciones); // sin autenticación
+router.get('/buscar', ubicacionController.buscarUbicaciones); // sin autenticación
+router.get('/:id', ubicacionController.obtenerUbicacionPorId); // sin autenticación
+router.put('/:id', auth.verifyToken, permisos.verificarPermiso('ubicaciones:actualizar'), actualizarUbicacionValidator, ubicacionController.actualizarUbicacion);
+router.delete('/:id', auth.verifyToken, permisos.verificarPermiso('ubicaciones:eliminar'), ubicacionController.eliminarUbicacion);
 
 module.exports = router;

@@ -1,3 +1,4 @@
+// routes/ocupacionRoutes.js
 const express = require('express');
 const router = express.Router();
 const ocupacionController = require('../controllers/ocupacionController');
@@ -9,25 +10,27 @@ const {
   transferirDifuntoValidator
 } = require('../validators/ocupacionValidator');
 
-// Solo usuarios con permiso de gestión de ocupaciones
-router.use(auth.verifyToken, permisos.verificarPermiso('gestion_ocupaciones'));
+// Middleware global: solo acceso a usuarios con permisos sobre ocupaciones
+router.use(auth.verifyToken, permisos.verificarPermiso('ocupaciones:leer')); // leer es el mínimo
 
-// Asignar difunto a espacio
-router.post('/', asignarDifuntoValidator, ocupacionController.asignarDifunto);
+// Asignar (crear ocupación)
+router.post('/', auth.verifyToken, permisos.verificarPermiso('ocupaciones:crear'), asignarDifuntoValidator, ocupacionController.asignarDifunto);
 
-// Liberar espacio de un difunto
-router.delete('/espacio/:espacioId/difunto/:difuntoId', liberarDifuntoValidator, ocupacionController.liberarDifunto);
+// Liberar (eliminar ocupación)
+router.delete(
+  '/espacio/:espacioId/difunto/:difuntoId',
+  auth.verifyToken,
+  permisos.verificarPermiso('ocupaciones:eliminar'),
+  liberarDifuntoValidator,
+  ocupacionController.liberarDifunto
+);
 
-// Obtener ocupaciones por espacio
+// Consultas de solo lectura
 router.get('/espacio/:id', ocupacionController.obtenerOcupacionesPorEspacio);
-
-// Obtener historial de ocupaciones por difunto
 router.get('/difunto/:id', ocupacionController.obtenerOcupacionesPorDifunto);
-
-// Obtener historial completo de un espacio (incluye liberaciones)
 router.get('/historial/espacio/:id', ocupacionController.obtenerHistorialEspacio);
 
-// Transferir difunto a otro espacio
-router.post('/transferir', transferirDifuntoValidator, ocupacionController.transferirDifunto);
+// Transferir (actualización especial)
+router.post('/transferir', auth.verifyToken, permisos.verificarPermiso('ocupaciones:actualizar'), transferirDifuntoValidator, ocupacionController.transferirDifunto);
 
 module.exports = router;

@@ -9,18 +9,13 @@ const {
   asignarPermisosValidator
 } = require('../validators/rolValidator');
 
-// Solo administradores pueden gestionar roles
-router.use(auth.verifyToken, permisos.verificarPermiso('gestion_roles'));
+router.post('/', auth.verifyToken, permisos.verificarPermiso('roles:crear'), crearRolValidator, rolController.crearRol);
+router.get('/', auth.verifyToken, permisos.verificarPermiso('roles:leer'), rolController.obtenerTodosRoles);
+router.get('/:id', auth.verifyToken, permisos.verificarPermiso('roles:leer'), rolController.obtenerRolPorId);
+router.put('/:id', auth.verifyToken, permisos.verificarPermiso('roles:actualizar'), actualizarRolValidator, rolController.actualizarRol);
+router.delete('/:id', auth.verifyToken, permisos.verificarPermiso('roles:eliminar'), rolController.eliminarRol);
 
-// Rutas CRUD
-router.post('/', crearRolValidator, rolController.crearRol);
-router.get('/', rolController.obtenerTodosRoles);
-router.get('/:id', rolController.obtenerRolPorId);
-router.put('/:id', actualizarRolValidator, rolController.actualizarRol);
-router.delete('/:id', rolController.eliminarRol);
-
-// Gestión de permisos
-router.post('/:id/permisos', asignarPermisosValidator, rolController.asignarPermisos);
-router.get('/:id/permisos', rolController.obtenerPermisos);
+router.post('/:id/permisos', auth.verifyToken, permisos.verificarPermiso('roles:actualizar'), asignarPermisosValidator, rolController.asignarPermisos);
+router.get('/:id/permisos', auth.verifyToken, permisos.verificarPermiso('roles:leer'), rolController.obtenerPermisos);
 
 module.exports = router;
